@@ -30,7 +30,6 @@
     margin-right: 1rem;
 }
 
-
 .chatGroup-user {
     display: flex;
     align-items: center;
@@ -52,6 +51,7 @@
 
 .chatGroup-user-name {
     font-weight: bold;
+    word-wrap: break-word;
     margin-bottom: 0;
 }
 
@@ -59,17 +59,22 @@
     font-size: .875rem;
     margin-top: 0;
     margin-bottom: 0;
+    word-wrap: break-word;
     color: #aaa;
 }
 
 .chatGroup-user-text {
     font-size: 1rem;
+    text-align: justify;
+    word-wrap: break-word;
     margin: 0;
 }
 
 .chatGroup-user-time {
     font-size: .75rem;
     margin-top: 0;
+    margin-bottom: 0;
+    word-wrap: break-word;
     color: #aaa;
 }
 

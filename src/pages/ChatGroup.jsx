@@ -54,11 +54,15 @@ export default function TodoList() {
 
   const addItem = (e) => {
     e.preventDefault();
+    if (e.target[0].value.trim() === "") {
+        return;
+    }
     // newDAta adalah data yang akan diupdate ke database
     const newData = list || [];
 
     // Tambahkan item baru ke newData
     const isiTodo = e.target[0].value;
+    document.querySelector("input").value = "";
     if (isiTodo.trim()) {
       const newItem = {
         id: Date.now(),
@@ -103,7 +107,8 @@ export default function TodoList() {
         newData[index].todo = isiTodo;
       }
     }
-
+    newData[index].edited = true;
+    newData[index].id = Date.now();
     // Update the data in the database
     const dataRef = ref(db, DB_TODO_KEY);
     set(dataRef, newData);
@@ -158,12 +163,14 @@ export default function TodoList() {
                       <div className="chatGroup-user">
                         {
                             item.user.uid !== user.uid && (
-                                <img
-                                src={item.user.photoURL}
-                                alt={item.user.displayName}
-                                className="chatGroup-user-img"
-                                referrerPolicy="no-referrer"
-                                />
+                                <div>
+                                    <img
+                                    src={item.user.photoURL}
+                                    alt={item.user.displayName}
+                                    className="chatGroup-user-img"
+                                    referrerPolicy="no-referrer"
+                                    />
+                                </div>
                             )
                         }
                         
@@ -171,11 +178,20 @@ export default function TodoList() {
                           <p className="chatGroup-user-name">
                             {item.user.displayName}
                           </p>
-                          <p className="chatGroup-user-text">
+                          <div className="container px-0" style={{ 
+                            maxWidth: "20vw",
+                            wordWrap: "break-word",
+                           }}>
+                             <p className="chatGroup-user-text">
                             {item.todo}
                             </p>
+                          </div>
+                          
                           <p className="chatGroup-user-time">
-                            {new Date(item.id).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(item.id).toLocaleDateString()} {new Date(item.id).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', })}
+                          </p>
+                          <p className="chatGroup-user-time">
+                            {item.edited && "(edited)"}
                           </p>
                         </div>
                         {
