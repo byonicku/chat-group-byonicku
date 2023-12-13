@@ -1,0 +1,81 @@
+.chatGroup {
+    width: 100%;
+    text-align: start;
+    padding: 0;
+}
+
+.chatGroup li {
+    display: flex;
+    align-items: flex-start; 
+    padding: .5rem 1rem;
+    border-bottom: 1px solid #ccc;
+}
+
+.sent {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+.received {
+    justify-content: flex-start;
+    text-align: left;
+}
+
+/* Add margin or padding as needed for spacing */
+.sent .chatGroup-user-field {
+    margin-left: 1rem;
+}
+
+.received .chatGroup-user-field {
+    margin-right: 1rem;
+}
+
+
+.chatGroup-user {
+    display: flex;
+    align-items: center;
+}
+
+.chatGroup-user-field {
+    margin-right: 1rem;
+    width: 100%;
+}
+
+.chatGroup-user-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.chatGroup-user-name {
+    font-weight: bold;
+    margin-bottom: 0;
+}
+
+.chatGroup-user-email {
+    font-size: .875rem;
+    margin-top: 0;
+    margin-bottom: 0;
+    color: #aaa;
+}
+
+.chatGroup-user-text {
+    font-size: 1rem;
+    margin: 0;
+}
+
+.chatGroup-user-time {
+    font-size: .75rem;
+    margin-top: 0;
+    color: #aaa;
+}
+
+.chatGroup-empty {
+    text-align: center;
+    padding: 1rem;
+    color: #aaa;
+}
+
