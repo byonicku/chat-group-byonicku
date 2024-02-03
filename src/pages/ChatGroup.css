@@ -21,7 +21,6 @@
     text-align: left;
 }
 
-/* Add margin or padding as needed for spacing */
 .sent .chatGroup-user-field {
     margin-left: 1rem;
 }
@@ -83,3 +82,17 @@
     color: #aaa;
 }
 
+footer {
+    top: auto;
+    left: 0;
+    bottom: 0;
+    height: 80px;
+    width: 100%;
+    position: fixed;
+    background-color: whitesmoke;
+}
+
+div#root {
+    padding-top: 80px;
+    padding-bottom: 80px;
+}

@@ -1,27 +1,32 @@
 import { useEffect, useState } from "react";
-import { db, DB_TODO_KEY } from "../../firebaseConfig";
+import { db, DB_KEY } from "../../firebaseConfig";
 import { ref, onValue, set, off } from "firebase/database";
 import { useNavigate } from "react-router-dom";
-import { FidgetSpinner } from "react-loader-spinner";
-import {
-  faDoorOpen,
-  faPencil,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
+import { TailSpin } from "react-loader-spinner";
+import { faPencil, faTrash, faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 
 import "./ChatGroup.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  Button,
+  Card,
+  CardBody,
+  Container,
+  Form,
+  Row,
+  Stack,
+} from "react-bootstrap";
 
-export default function TodoList() {
+export default function ChatGroup(props) {
   const [list, setList] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [input, setInput] = useState("");
 
   const navigate = useNavigate();
 
   useEffect(() => {
     // Get user dari localStorage
-
     const userLocalStorage = localStorage.getItem("userfb");
     if (!userLocalStorage) {
       navigate("/");
@@ -29,10 +34,8 @@ export default function TodoList() {
       const userLocalStorageObject = JSON.parse(userLocalStorage);
       setUser(userLocalStorageObject);
 
-      // Get data dari database dengan key=DB_TODO_KEY
-      const dataRef = ref(db, DB_TODO_KEY);
+      const dataRef = ref(db, DB_KEY);
 
-      // Ketika ada perubahan data, maka akan mengambil data dari database
       const onDataChange = (snapshot) => {
         setLoading(false);
         const newData = snapshot.val();
@@ -50,23 +53,24 @@ export default function TodoList() {
         off(dataRef, onDataChange);
       };
     }
-  }, []);
+  }, [props, navigate]);
 
   const addItem = (e) => {
     e.preventDefault();
-    if (e.target[0].value.trim() === "") {
-        return;
-    }
-    // newDAta adalah data yang akan diupdate ke database
+
+    if (input === "") return;
+
+    // newData adalah data yang akan diupdate ke database
     const newData = list || [];
 
     // Tambahkan item baru ke newData
-    const isiTodo = e.target[0].value;
-    document.querySelector("input").value = "";
-    if (isiTodo.trim()) {
+    const chat = input;
+
+    setInput("");
+    if (chat) {
       const newItem = {
         id: Date.now(),
-        todo: isiTodo,
+        chat: chat,
         user: {
           uid: user.uid,
           displayName: user.displayName,
@@ -75,11 +79,13 @@ export default function TodoList() {
         },
       }; // Replace this with your actual item
       newData.push(newItem);
-
+      console.log(chat);
       // Update the data in the database
-      const dataRef = ref(db, DB_TODO_KEY);
+      const dataRef = ref(db, DB_KEY);
       set(dataRef, newData);
     }
+
+    e.target.reset();
   };
 
   const deleteItem = (id) => {
@@ -92,7 +98,7 @@ export default function TodoList() {
     }
 
     // Update the data in the database
-    const dataRef = ref(db, DB_TODO_KEY);
+    const dataRef = ref(db, DB_KEY);
     set(dataRef, newData);
   };
 
@@ -102,108 +108,121 @@ export default function TodoList() {
     // Update item dengan id tertentu dari newData
     const index = newData.findIndex((item) => item.id === id);
     if (index !== -1) {
-      const isiTodo = prompt("Enter your new message :", newData[index].todo);
-      if (isiTodo.trim()) {
-        newData[index].todo = isiTodo;
+      const chat = prompt("Enter your new message :", newData[index].todo);
+
+      if (chat.trim()) {
+        newData[index].chat = chat;
       }
     }
+
     newData[index].edited = true;
     newData[index].id = Date.now();
+
     // Update the data in the database
-    const dataRef = ref(db, DB_TODO_KEY);
+    const dataRef = ref(db, DB_KEY);
     set(dataRef, newData);
   };
 
-  const logout = () => {
-    localStorage.removeItem("userfb");
-    localStorage.removeItem("tokenfb");
-    navigate("/");
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && e.shiftKey) {
+      setInput((prev) => prev + "\\n");
+    }
+
+    if (e.key === "Enter" && e.shiftKey == false) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.target.form.dispatchEvent(
+        new Event("submit", { cancelable: true, bubbles: true })
+      );
+    }
   };
 
   return (
     <div>
       {loading ? (
-        <FidgetSpinner />
+        <Container className="d-flex flex-column align-items-center text-center my-5">
+          <TailSpin color="#00BFFF" />
+        </Container>
       ) : (
         <>
-          <div className="card">
-            <div className="card-title">
-              <h1>Chat Group 9 / 11</h1>
-              <button onClick={() => logout()} className="btn btn-danger">
-                <FontAwesomeIcon icon={faDoorOpen} /> Logout
-              </button>
-            </div>
-            <div className="card-body">
+          <Card className="border-0">
+            <CardBody>
               <ul className="chatGroup">
                 {list.length > 0 ? (
                   list.map((item) => (
-                    <li key={item.id} className={item.user.uid === user.uid ? 'sent' : 'received'}>
-                        {item.user.uid === user.uid && (
-                          <>
-                            <div className="row text-start">
-                                <div className="col-md-12 pb-1">
-                                    <button
-                                    className="btn btn-success"
-                                    onClick={() => updateItem(item.id)}
-                                    >
-                                    <FontAwesomeIcon icon={faPencil} width={15}/>
-                                    </button>
-                                </div>
-                                <div className="col-md-12">
-                                    <button
-                                    className="btn btn-danger"
-                                    onClick={() => deleteItem(item.id)}
-                                    >
-                                    <FontAwesomeIcon icon={faTrash} />
-                                    </button>
-                                </div>
+                    <li
+                      key={item.id}
+                      className={
+                        item.user.uid === user.uid ? "sent" : "received"
+                      }
+                    >
+                      {item.user.uid === user.uid && (
+                        <>
+                          <Row className="text-start">
+                            <div className="col-md-12 pb-1">
+                              <Button
+                                variant="success"
+                                onClick={() => updateItem(item.id)}
+                              >
+                                <FontAwesomeIcon icon={faPencil} width={15} />
+                              </Button>
                             </div>
-                          </>
-                        )}
+                            <div className="col-md-12">
+                              <button
+                                className="btn btn-danger"
+                                onClick={() => deleteItem(item.id)}
+                              >
+                                <FontAwesomeIcon icon={faTrash} />
+                              </button>
+                            </div>
+                          </Row>
+                        </>
+                      )}
                       <div className="chatGroup-user">
-                        {
-                            item.user.uid !== user.uid && (
-                                <div>
-                                    <img
-                                    src={item.user.photoURL}
-                                    alt={item.user.displayName}
-                                    className="chatGroup-user-img"
-                                    referrerPolicy="no-referrer"
-                                    />
-                                </div>
-                            )
-                        }
-                        
+                        {item.user.uid !== user.uid && (
+                          <div>
+                            <img
+                              src={item.user.photoURL}
+                              alt={item.user.displayName}
+                              className="chatGroup-user-img"
+                              referrerPolicy="no-referrer"
+                            />
+                          </div>
+                        )}
+
                         <div className="chatGroup-user-field">
                           <p className="chatGroup-user-name">
                             {item.user.displayName}
                           </p>
-                          <div className="container px-0" style={{ 
-                            maxWidth: "20vw",
-                            wordWrap: "break-word",
-                           }}>
-                             <p className="chatGroup-user-text">
-                            {item.todo}
-                            </p>
+                          <div
+                            className="container px-0"
+                            style={{
+                              maxWidth: "20vw",
+                              wordWrap: "break-word",
+                            }}
+                          >
+                            <p className="chatGroup-user-text">{item.chat}</p>
                           </div>
-                          
+
                           <p className="chatGroup-user-time">
-                            {new Date(item.id).toLocaleDateString()} {new Date(item.id).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', })}
+                            {new Date(item.id).toLocaleDateString()}{" "}
+                            {new Date(item.id).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </p>
                           <p className="chatGroup-user-time">
                             {item.edited && "(edited)"}
                           </p>
                         </div>
-                        {
-                            item.user.uid === user.uid && (
-                                <img
-                                src={item.user.photoURL}
-                                alt={item.user.displayName}
-                                className="chatGroup-user-img"
-                                referrerPolicy="no-referrer"
-                                />
-                            )
-                        }
+                        {item.user.uid === user.uid && (
+                          <img
+                            src={item.user.photoURL}
+                            alt={item.user.displayName}
+                            className="chatGroup-user-img"
+                            referrerPolicy="no-referrer"
+                          />
+                        )}
                       </div>
                     </li>
                   ))
@@ -211,24 +230,30 @@ export default function TodoList() {
                   <p className="chatGroup-empty">Belum ada chat :(</p>
                 )}
               </ul>
-              <form onSubmit={addItem}>
-                <div className="row">
-                  <div className="col-md-10">
-                    <input
+              <footer>
+                <form onSubmit={addItem} >
+                  <div className="py-2 px-3">
+                  <Stack direction="horizontal" gap={2} className="d-flex align-items-center">
+                    <Form.Control
+                      id="chatGroup-input"
                       type="text"
+                      as={"textarea"}
                       placeholder="Enter your message"
-                      className="form-control"
+                      onKeyDown={handleKeyDown}
+                      onChange={(e) => setInput(e.target.value)}
+                      style={{ resize: "none" }}
                     />
+
+                    <Button type="submit" variant="light">
+                      <FontAwesomeIcon icon={faPaperPlane} type="submit" size="lg"/>
+                    </Button>
+                  </Stack>
                   </div>
-                  <div className="col-md-2 ps-0">
-                    <button type="submit" className="btn btn-primary">
-                      Send
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
+                  
+                </form>
+              </footer>
+            </CardBody>
+          </Card>
         </>
       )}
     </div>

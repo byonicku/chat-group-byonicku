@@ -28,4 +28,4 @@ export default app;
 
 // Firebase Realtime Database
 export const db = getDatabase(app);
-export const DB_TODO_KEY = 'todos';
+export const DB_KEY = 'chat';
