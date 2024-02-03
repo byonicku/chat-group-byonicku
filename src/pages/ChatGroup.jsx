@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { db, DB_KEY } from "../../firebaseConfig";
 import { ref, onValue, set, off } from "firebase/database";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,7 @@ import {
   faPencil,
   faTrash,
   faPaperPlane,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
 import "./ChatGroup.css";
@@ -15,19 +16,35 @@ import {
   Button,
   Card,
   CardBody,
+  Col,
   Container,
+  Dropdown,
   Form,
   Row,
   Stack,
 } from "react-bootstrap";
+
+/*
+  TODO
+  1. Make a better edit / delete message button
+  2. Make chat box more responsive
+*/
 
 export default function ChatGroup(props) {
   const [list, setList] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [input, setInput] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [display, setDisplay] = useState({ display: "none" });
 
   const navigate = useNavigate();
+  const listChat = useRef(null);
+
+  useEffect(() => {
+    listChat.current?.lastElementChild?.scrollIntoView({ behavior: "smooth" });
+  }, [list]);
 
   useEffect(() => {
     // Get user dari localStorage
@@ -69,9 +86,17 @@ export default function ChatGroup(props) {
 
     // Tambahkan item baru ke newData
     const chat = input;
-
     setInput("");
-    if (chat) {
+
+    if (editing) {
+      updateItem();
+      setEditing(false);
+      e.target.reset();
+      e.target.blur();
+      return;
+    }
+
+    if (chat.trim()) {
       const newItem = {
         id: Date.now(),
         chat: chat,
@@ -107,13 +132,13 @@ export default function ChatGroup(props) {
     set(dataRef, newData);
   };
 
-  const updateItem = (id) => {
+  const updateItem = () => {
     const newData = list || [];
 
     // Update item dengan id tertentu dari newData
-    const index = newData.findIndex((item) => item.id === id);
+    const index = newData.findIndex((item) => item.id === editId);
     if (index !== -1) {
-      const chat = prompt("Enter your new message :", newData[index].todo);
+      const chat = input;
 
       if (chat.trim()) {
         newData[index].chat = chat;
@@ -130,7 +155,7 @@ export default function ChatGroup(props) {
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && e.shiftKey) {
-      setInput((prev) => prev + "\\n");
+      setInput((prev) => prev + "\n");
     }
 
     if (e.key === "Enter" && e.shiftKey == false) {
@@ -140,6 +165,23 @@ export default function ChatGroup(props) {
         new Event("submit", { cancelable: true, bubbles: true })
       );
     }
+  };
+
+  const handleEdit = (id) => {
+    setEditing(!editing);
+    const index = list.findIndex((item) => item.id === id);
+    const chat = list[index].chat;
+    setInput(chat);
+    document.getElementById("chat-input").value = chat;
+
+    setEditId(id);
+  };
+
+  const reset = (e) => {
+    e.preventDefault();
+    setInput("");
+    setEditing(false);
+    document.getElementById("chat-input").value = "";
   };
 
   return (
@@ -152,7 +194,7 @@ export default function ChatGroup(props) {
         <>
           <Card className="border-0">
             <CardBody>
-              <ul className="chatGroup">
+              <ul className="chatGroup" ref={listChat}>
                 {list.length > 0 ? (
                   list.map((item) => (
                     <li
@@ -164,26 +206,37 @@ export default function ChatGroup(props) {
                       {item.user.uid === user.uid && (
                         <>
                           <Row className="text-start">
-                            <div className="col-md-12 pb-1">
+                            <Col md={12} className="pb-1">
                               <Button
                                 variant="success"
-                                onClick={() => updateItem(item.id)}
+                                onClick={() => {
+                                  setEditId(item.id);
+                                  handleEdit(item.id);
+                                }}
                               >
                                 <FontAwesomeIcon icon={faPencil} width={15} />
                               </Button>
-                            </div>
-                            <div className="col-md-12">
+                            </Col>
+                            <Col md={12}>
                               <button
                                 className="btn btn-danger"
                                 onClick={() => deleteItem(item.id)}
                               >
                                 <FontAwesomeIcon icon={faTrash} />
                               </button>
-                            </div>
+                            </Col>
                           </Row>
                         </>
                       )}
-                      <div className="chatGroup-user">
+                      <div
+                        className="chatGroup-user"
+                        onMouseEnter={() => {
+                          setDisplay({ display: "block" });
+                        }}
+                        onMouseLeave={() => {
+                          setDisplay({ display: "none" });
+                        }}
+                      >
                         {item.user.uid !== user.uid && (
                           <div>
                             <img
@@ -194,11 +247,22 @@ export default function ChatGroup(props) {
                             />
                           </div>
                         )}
-
+    
                         <div className="chatGroup-user-field">
+                          <div className="d-flex">
                           <p className="chatGroup-user-name">
                             {item.user.displayName}
                           </p>
+                          {item.user.uid === user.uid && (
+                            <Dropdown.Toggle
+                              variant="light"
+                              size="sm"
+                              style={display}
+                            />
+                          )}
+                          </div>
+                          
+
                           <div
                             className="container px-0"
                             style={{
@@ -235,30 +299,45 @@ export default function ChatGroup(props) {
                   <p className="chatGroup-empty">Belum ada chat :(</p>
                 )}
               </ul>
+
               <footer>
-                <form onSubmit={addItem}>
+                <form
+                  onSubmit={addItem}
+                  onReset={reset}
+                  className={editing ? "edit-animation" : ""}
+                >
                   <div className="py-2 px-3">
+                    {editing && (
+                      <div className="mb-2 text-danger">
+                        <small>Currently editing a message</small>
+                      </div>
+                    )}
                     <Stack
                       direction="horizontal"
                       gap={2}
                       className="d-flex align-items-center"
                     >
                       <Form.Control
-                        id="chatGroup-input"
+                        id="chat-input"
                         type="text"
                         as={"textarea"}
                         placeholder="Enter your message"
                         onKeyDown={handleKeyDown}
                         onChange={(e) => setInput(e.target.value)}
-                        style={{ resize: "none" }}
+                        style={{
+                          resize: "none",
+                          borderColor: editing ? "red" : "",
+                        }}
                       />
 
+                      {editing && (
+                        <Button type={"reset"} variant="danger">
+                          <FontAwesomeIcon icon={faXmark} size="lg" />
+                        </Button>
+                      )}
+
                       <Button type="submit" variant="light">
-                        <FontAwesomeIcon
-                          icon={faPaperPlane}
-                          type="submit"
-                          size="lg"
-                        />
+                        <FontAwesomeIcon icon={faPaperPlane} size="lg" />
                       </Button>
                     </Stack>
                   </div>

@@ -21,6 +21,8 @@ Header.propTypes = {
 export default function Header({ user, signInWithGoogle, logout }) {
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
     <Navbar
       expand="lg"
@@ -37,14 +39,19 @@ export default function Header({ user, signInWithGoogle, logout }) {
         </Navbar.Brand>
         <Navbar.Toggle
           aria-controls="basic-navbar-nav"
-          onClick={() => setExpanded(expanded ? false : "expanded")}
+          onClick={() => {
+            setExpanded(expanded ? false : "expanded");
+            setIsExpanded(!isExpanded);
+          }}
         />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
             <Nav.Link
               onClick={() => {
                 navigate("/about");
+                if (!isExpanded) return;
                 setExpanded(expanded ? false : "expanded");
+                setIsExpanded(!isExpanded);
               }}
             >
               About
@@ -68,8 +75,10 @@ export default function Header({ user, signInWithGoogle, logout }) {
             <Button
               variant="success"
               onClick={() => {
-                setExpanded(expanded ? false : "expanded");
                 signInWithGoogle();
+                if (!isExpanded) return;
+                setExpanded(expanded ? false : "expanded");
+                setIsExpanded(!isExpanded);
               }}
             >
               Sign in with Google
