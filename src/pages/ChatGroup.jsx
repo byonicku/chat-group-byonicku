@@ -90,6 +90,7 @@ export default function ChatGroup(props) {
     }
 
     e.target.reset();
+    e.target.blur();
   };
 
   const deleteItem = (id) => {
