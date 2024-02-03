@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 import { Container } from "react-bootstrap";
 
 LandingPage.propTypes = {
-    user: PropTypes.object
+  user: PropTypes.object,
 };
 
 /*
@@ -13,17 +13,17 @@ LandingPage.propTypes = {
 */
 
 export default function LandingPage(props) {
-    const { user } = props;
-    return (
-        <>
-            <Container className="d-flex flex-column align-items-center text-center my-5">
-                <div>Welcome to Chat Group!</div>
-                {
-                    user &&
-                    <Link to="/chat" className="btn btn-primary">Go to Chat Group</Link>
-                }
-            </Container>            
-        </>
-    )
+  const { user } = props;
+  return (
+    <>
+      <Container className="d-flex flex-column align-items-center text-center my-5">
+        <div>Welcome to Chat Group!</div>
+        {user && (
+          <Link to="/chat" className="btn btn-primary">
+            Go to Chat Group
+          </Link>
+        )}
+      </Container>
+    </>
+  );
 }
-

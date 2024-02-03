@@ -1,4 +1,3 @@
-
 /*
     TODO
     1. Create about page
@@ -11,9 +10,9 @@ import { Container } from "react-bootstrap";
 export default function About() {
   return (
     <>
-        <Container className="d-flex flex-column align-items-center text-center my-5">
-            <p>About</p>
-        </Container>
+      <Container className="d-flex flex-column align-items-center text-center my-5">
+        <p>About</p>
+      </Container>
     </>
-  )
+  );
 }

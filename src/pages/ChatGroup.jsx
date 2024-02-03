@@ -3,7 +3,11 @@ import { db, DB_KEY } from "../../firebaseConfig";
 import { ref, onValue, set, off } from "firebase/database";
 import { useNavigate } from "react-router-dom";
 import { TailSpin } from "react-loader-spinner";
-import { faPencil, faTrash, faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPencil,
+  faTrash,
+  faPaperPlane,
+} from "@fortawesome/free-solid-svg-icons";
 
 import "./ChatGroup.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -231,25 +235,32 @@ export default function ChatGroup(props) {
                 )}
               </ul>
               <footer>
-                <form onSubmit={addItem} >
+                <form onSubmit={addItem}>
                   <div className="py-2 px-3">
-                  <Stack direction="horizontal" gap={2} className="d-flex align-items-center">
-                    <Form.Control
-                      id="chatGroup-input"
-                      type="text"
-                      as={"textarea"}
-                      placeholder="Enter your message"
-                      onKeyDown={handleKeyDown}
-                      onChange={(e) => setInput(e.target.value)}
-                      style={{ resize: "none" }}
-                    />
+                    <Stack
+                      direction="horizontal"
+                      gap={2}
+                      className="d-flex align-items-center"
+                    >
+                      <Form.Control
+                        id="chatGroup-input"
+                        type="text"
+                        as={"textarea"}
+                        placeholder="Enter your message"
+                        onKeyDown={handleKeyDown}
+                        onChange={(e) => setInput(e.target.value)}
+                        style={{ resize: "none" }}
+                      />
 
-                    <Button type="submit" variant="light">
-                      <FontAwesomeIcon icon={faPaperPlane} type="submit" size="lg"/>
-                    </Button>
-                  </Stack>
+                      <Button type="submit" variant="light">
+                        <FontAwesomeIcon
+                          icon={faPaperPlane}
+                          type="submit"
+                          size="lg"
+                        />
+                      </Button>
+                    </Stack>
                   </div>
-                  
                 </form>
               </footer>
             </CardBody>
